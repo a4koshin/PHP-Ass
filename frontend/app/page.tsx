@@ -28,7 +28,7 @@ export default function Home() {
   };
 
   return (
-    <main className="p-10 space-y-6">
+    <main className="mx-auto max-w-4xl p-10 space-y-6">
       <Button onClick={() => setOpen(true)}>Create Item</Button>
 
       <CreateItemDialog open={open} setOpen={setOpen} onCreate={addItem} />
