@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,20 +9,21 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Item } from "@/lib/api";
 
 type Props = {
   open: boolean;
   setOpen: (v: boolean) => void;
-  onCreate: (data: {
-    title: string;
-    description: string;
-    status: "Lost" | "Found";
-    location: string;
-    contact: string;
-  }) => void;
+  item: Item | null;
+  onUpdate: (id: number, data: Omit<Item, "id" | "created_at">) => void;
 };
 
-export default function CreateItemDialog({ open, setOpen, onCreate }: Props) {
+export default function EditItemDialog({
+  open,
+  setOpen,
+  item,
+  onUpdate,
+}: Props) {
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -31,23 +32,25 @@ export default function CreateItemDialog({ open, setOpen, onCreate }: Props) {
     contact: "",
   });
 
-  const handleSubmit = () => {
-    onCreate(form);
-    setForm({
-      title: "",
-      description: "",
-      status: "Lost",
-      location: "",
-      contact: "",
-    });
-    setOpen(false);
-  };
+  useEffect(() => {
+    if (item) {
+      setForm({
+        title: item.title,
+        description: item.description,
+        status: item.status,
+        location: item.location,
+        contact: item.contact,
+      });
+    }
+  }, [item]);
+
+  if (!item) return null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Lost / Found Item</DialogTitle>
+          <DialogTitle>Edit Item</DialogTitle>
         </DialogHeader>
 
         <Input
@@ -63,6 +66,17 @@ export default function CreateItemDialog({ open, setOpen, onCreate }: Props) {
         />
 
         <Input
+          placeholder="Status (Lost or Found)"
+          value={form.status}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              status: e.target.value as "Lost" | "Found",
+            })
+          }
+        />
+
+        <Input
           placeholder="Location"
           value={form.location}
           onChange={(e) => setForm({ ...form, location: e.target.value })}
@@ -74,7 +88,14 @@ export default function CreateItemDialog({ open, setOpen, onCreate }: Props) {
           onChange={(e) => setForm({ ...form, contact: e.target.value })}
         />
 
-        <Button onClick={handleSubmit}>Submit</Button>
+        <Button
+          onClick={() => {
+            onUpdate(item.id, form);
+            setOpen(false);
+          }}
+        >
+          Save Changes
+        </Button>
       </DialogContent>
     </Dialog>
   );

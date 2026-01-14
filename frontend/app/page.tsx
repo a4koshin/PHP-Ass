@@ -1,39 +1,77 @@
 "use client";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import CreateItemDialog from "@/components/CreateItemDialog";
-import ItemsTable from "@/components/ItemsTable";
 
-export type Item = {
-  id: string;
-  name: string;
-};
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import ItemsTable from "@/components/ItemsTable";
+import CreateItemDialog from "@/components/CreateItemDialog";
+import EditItemDialog from "@/components/EditItemDialog";
+import { getItems, createItem, updateItem, deleteItem, Item } from "@/lib/api";
 
 export default function Home() {
   const [items, setItems] = useState<Item[]>([]);
-  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [openCreate, setOpenCreate] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
-  const addItem = (name: string) => {
-    setItems((prev) => [...prev, { id: crypto.randomUUID(), name }]);
+  const loadItems = async () => {
+    try {
+      setLoading(true);
+      const data = await getItems();
+      setItems(data);
+      setError("");
+    } catch {
+      setError("Failed to load items");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateItem = (id: string, name: string) => {
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, name } : item))
-    );
-  };
-
-  const deleteItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  };
+  useEffect(() => {
+    loadItems();
+  }, []);
 
   return (
-    <main className="mx-auto max-w-4xl p-10 space-y-6">
-      <Button onClick={() => setOpen(true)}>Create Item</Button>
+    <main className="p-10 space-y-6">
+      <Button onClick={() => setOpenCreate(true)}>Create Item</Button>
 
-      <CreateItemDialog open={open} setOpen={setOpen} onCreate={addItem} />
+      {loading && <p>Loading items...</p>}
 
-      <ItemsTable items={items} onUpdate={updateItem} onDelete={deleteItem} />
+      {error && <p className="text-red-600">{error}</p>}
+
+      {!loading && !error && (
+        <ItemsTable
+          items={items}
+          onEdit={(item) => {
+            setSelectedItem(item);
+            setOpenEdit(true);
+          }}
+          onDelete={async (id) => {
+            await deleteItem(id);
+            loadItems();
+          }}
+        />
+      )}
+
+      <CreateItemDialog
+        open={openCreate}
+        setOpen={setOpenCreate}
+        onCreate={async (data) => {
+          await createItem(data);
+          loadItems();
+        }}
+      />
+
+      <EditItemDialog
+        open={openEdit}
+        setOpen={setOpenEdit}
+        item={selectedItem}
+        onUpdate={async (id, data) => {
+          await updateItem(id, data);
+          loadItems();
+        }}
+      />
     </main>
   );
 }

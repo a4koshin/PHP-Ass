@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,24 +9,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Item } from "@/app/page";
+import { Item } from "@/lib/api";
 
 type Props = {
   items: Item[];
-  onUpdate: (id: string, name: string) => void;
-  onDelete: (id: string) => void;
+  onEdit: (item: Item) => void;
+  onDelete: (id: number) => void;
 };
 
-export default function ItemsTable({ items, onUpdate, onDelete }: Props) {
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [value, setValue] = useState("");
-
+export default function ItemsTable({ items, onEdit, onDelete }: Props) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Name</TableHead>
+          <TableHead>Title</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Location</TableHead>
+          <TableHead>Contact</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -35,40 +33,29 @@ export default function ItemsTable({ items, onUpdate, onDelete }: Props) {
       <TableBody>
         {items.map((item) => (
           <TableRow key={item.id}>
+            <TableCell>{item.title}</TableCell>
+
+            {/* Status badge added below (step 2) */}
             <TableCell>
-              {editingId === item.id ? (
-                <Input
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                />
-              ) : (
-                item.name
-              )}
+              <span
+                className={`px-2 py-1 rounded text-sm font-medium
+                  ${
+                    item.status === "Lost"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-green-100 text-green-700"
+                  }`}
+              >
+                {item.status}
+              </span>
             </TableCell>
 
+            <TableCell>{item.location}</TableCell>
+            <TableCell>{item.contact}</TableCell>
+
             <TableCell className="text-right space-x-2">
-              {editingId === item.id ? (
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    onUpdate(item.id, value);
-                    setEditingId(null);
-                  }}
-                >
-                  Save
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setEditingId(item.id);
-                    setValue(item.name);
-                  }}
-                >
-                  Edit
-                </Button>
-              )}
+              <Button size="sm" variant="outline" onClick={() => onEdit(item)}>
+                Edit
+              </Button>
 
               <Button
                 size="sm"
