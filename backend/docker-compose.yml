@@ -1,0 +1,41 @@
+services:
+  lostfound_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lostfound_app
+    ports:
+      - "8000:80"
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - lostfound_db
+
+  lostfound_db:
+    image: mysql:8.0
+    container_name: lostfound_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: lost_found
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - lostfound_db_data:/var/lib/mysql
+
+  lostfound_phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: lostfound_phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: lostfound_db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      - lostfound_db
+
+volumes:
+  lostfound_db_data:

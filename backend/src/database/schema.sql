@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(120) NOT NULL,
+  description TEXT,
+  status ENUM('Lost','Found') NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
