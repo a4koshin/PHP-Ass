@@ -33,8 +33,11 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="p-10 space-y-6">
-      <Button onClick={() => setOpenCreate(true)}>Create Item</Button>
+    <main className="mx-auto max-w-4xl p-10 space-y-6">
+      <div className="flex items-center justify-center  gap-96">
+        <h1>Register the you Lost</h1>
+        <Button onClick={() => setOpenCreate(true)}>Create Item</Button>
+      </div>
 
       {loading && <p>Loading items...</p>}
 
